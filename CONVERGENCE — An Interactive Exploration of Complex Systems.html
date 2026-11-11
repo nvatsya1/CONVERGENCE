@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CONVERGENCE — An Interactive Exploration of Complex Systems</title>
+<meta name="description" content="Twenty-six thousand particles travel through seven ideas in complexity science: chaos, emergence, networks, synchronization, fractals, complex adaptive systems and equilibrium.">
+<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+:root{--bg:#030303;--fg:#f2f2f2;--mute:#9b9b9b;--dim:#666;--line:#ffffff26;--e:cubic-bezier(.22,.7,.2,1);--serif:"Instrument Serif",Georgia,"Times New Roman",serif;--sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg);color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--fg);font:300 1rem/1.7 var(--sans);-webkit-font-smoothing:antialiased}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
+body.nogl #gl{display:none}
+body.nogl{background-image:radial-gradient(#ffffff22 1px,transparent 1px);background-size:24px 24px}
+.hud{position:fixed;z-index:5;font:400 .66rem/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--mute);pointer-events:none}
+.brand{top:calc(env(safe-area-inset-top,0px) + 1.4rem);left:1.6rem;color:var(--fg)}
+.now{top:calc(env(safe-area-inset-top,0px) + 1.4rem);right:1.6rem;text-align:right}
+.bar{left:0;right:0;bottom:0;height:2px;background:var(--line)}
+.bar i{display:block;height:100%;background:var(--fg);transform-origin:0 50%;transform:scaleX(0)}
+.dots{right:1.4rem;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:.2rem;pointer-events:auto}
+.dots a{display:block;width:2.75rem;height:1.4rem;position:relative}
+.dots a::after{content:"";position:absolute;right:.2rem;top:50%;width:.9rem;height:1px;background:var(--dim);transition:width .8s var(--e),background .8s}
+.dots a.on::after{width:2rem;background:var(--fg)}
+.dots a:focus-visible{outline:1px solid var(--fg)}
+main{position:relative;z-index:2}
+.chap{min-height:100vh;min-height:100svh;display:flex;align-items:center;padding:16vh clamp(1.6rem,7vw,7rem)}
+.chap:nth-child(even){justify-content:flex-end}
+.col{max-width:28rem;width:100%;text-shadow:0 0 14px #030303,0 0 3px #030303}
+.lab{font:400 .66rem/1 var(--mono);letter-spacing:.5em;text-transform:uppercase;color:var(--mute);margin:0 0 1.5rem;white-space:nowrap}
+.lab span{color:var(--fg);margin-left:1.2em}
+h2{font:400 clamp(2.4rem,5vw,4.8rem)/.95 var(--serif);letter-spacing:-.02em;margin:0 0 1rem}
+em{font-style:italic}
+h2 em{color:var(--mute)}
+.sub{font:italic 400 clamp(1.1rem,1.9vw,1.45rem)/1.35 var(--serif);color:var(--mute);margin:0 0 1.8rem}
+.lede{color:#cfcfcf;margin:0 0 1.6rem;font-size:.94rem;line-height:1.65}
+.blk{margin:0 0 1.2rem}
+h3{font:400 .62rem/1 var(--mono);letter-spacing:.24em;text-transform:uppercase;color:var(--dim);margin:0 0 .6rem;font-weight:400}
+.blk p{margin:0;font-size:.82rem;line-height:1.6;color:var(--mute)}
+.eq{margin-top:.8rem!important;font:italic 400 1.25rem/1.4 var(--serif)!important;color:#e8e8e8!important;clip-path:inset(0 100% 0 0);transition:clip-path .5s}
+.refs{border-top:1px solid var(--line);padding-top:1rem}
+.refs ul{margin:0;padding:0;list-style:none;font-size:.76rem;line-height:1.55;color:var(--dim)}
+.refs li+li{margin-top:.3rem}.refs cite{color:var(--mute)}
+/* motion */
+.rv{opacity:0;transform:translateY(1rem);transition:opacity .6s ease,transform .6s ease}
+.past .rv{transform:translateY(-1rem)}
+.in .rv{opacity:1;transform:none;transition:opacity var(--d,1.2s) var(--e) var(--s,0s),transform var(--d,1.2s) var(--e) var(--s,0s)}
+.lab{--d:.8s;--s:0s;transition:opacity .6s,transform .6s,letter-spacing .6s}
+.in .lab{letter-spacing:.24em;transition:opacity .8s var(--e),transform .8s var(--e),letter-spacing 1.5s var(--e)}
+.sub{--d:.9s;--s:.6s}.lede{--d:1.6s;--s:.8s}
+.blk:nth-of-type(1){--s:1.3s}.blk:nth-of-type(2){--s:1.6s}.blk:nth-of-type(3){--s:1.9s}.blk:nth-of-type(4){--s:2.7s;--d:1.4s}
+.in .eq{clip-path:inset(0 0 0 0);transition:clip-path 1.8s var(--e) calc(var(--s) + .9s)}
+.w{display:inline-block;overflow:hidden;vertical-align:top;padding:0 .04em .14em 0;margin-bottom:-.14em}
+.w i{display:inline-block;font-style:inherit;transform:translateY(112%);transition:transform .6s ease}
+.past .w i{transform:translateY(-112%)}
+.in .w i{transform:none;transition:transform 1.15s var(--e) calc(.15s + var(--k)*.09s)}
+html:not(.js) .rv,html:not(.js) .eq{opacity:1;transform:none;clip-path:none}
+/* intro & end */
+.intro{flex-direction:column;justify-content:center;align-items:center;text-align:center;position:relative;text-shadow:0 0 24px #030303}
+.intro .col{max-width:46rem}
+.intro .rv{transform:translateY(1.8rem)}
+.eyebrow{--s:1.8s;--d:1.2s;margin-bottom:1.6rem}
+.ttl{font:400 clamp(2.6rem,9.5vw,9rem)/1 var(--serif);letter-spacing:.14em;margin:0;padding-left:.14em;--s:2.6s;--d:2.4s}
+.intro .sub{--s:4s;--d:1.6s;margin:.6rem 0 3.2rem}
+.intro.in .w i{transition:transform 1.5s var(--e) calc(5s + var(--k)*.12s)}
+.intro h2{font-size:clamp(1.8rem,4vw,3.2rem);margin-bottom:1.2rem}
+.intro .lede{--s:6.4s;--d:1.8s;max-width:30rem;margin:0 auto}
+.scr{position:absolute;bottom:2.6rem;left:0;right:0;text-align:center;font:400 .62rem/1 var(--mono);letter-spacing:.3em;color:var(--mute);--s:8s;--d:1.6s}
+.scr::after{content:"";display:block;width:1px;height:2.6rem;margin:.9rem auto 0;background:linear-gradient(var(--fg),transparent);transform-origin:top;animation:pulse 3.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scaleY(.25);opacity:.3}50%{transform:scaleY(1);opacity:1}}
+.end{min-height:100vh;min-height:100svh;justify-content:center!important;text-align:center;text-shadow:0 0 24px #030303}
+.end{align-items:flex-end}.end .col{max-width:40rem}.end h2{font-size:clamp(2.2rem,5.2vw,4.6rem)}
+.mono{font:400 .64rem/2 var(--mono);letter-spacing:.24em;text-transform:uppercase;color:var(--mute);margin:0}
+.end .sub{--s:1.4s;margin-bottom:3rem}
+.end .note{font-size:.74rem;line-height:1.6;color:var(--dim);max-width:28rem;margin:2.4rem auto 0;--s:3s}
+.skip{position:absolute;left:-99rem}.skip:focus{left:1rem;top:1rem;z-index:9;background:var(--fg);color:#000;padding:.5rem 1rem}
+@media(max-width:760px){
+ .dots{display:none}.brand{left:1.1rem}.now{right:1.1rem}.chap:not(.intro){align-items:flex-end}.lede{font-size:.88rem}.blk p{font-size:.78rem}
+ .chap{padding:14vh 1.4rem}.chap:nth-child(even){justify-content:flex-start}
+ .col:not(.hero){padding:1.4rem 1.2rem;margin:0 -1.2rem;background:linear-gradient(#03030000,#030303bd 10%,#030303bd 90%,#03030000)}
+ h2{font-size:clamp(2.4rem,13vw,3.6rem)}.ttl{letter-spacing:.08em}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}.rv,.w i{transform:none!important}.eq{clip-path:none!important}.lab{letter-spacing:.24em}}
+</style>
+</head>
+<body>
+<a class="skip" href="#c1">Skip to content</a>
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="hud brand">Convergence</div>
+<div class="hud now" id="now" aria-live="polite">Prologue</div>
+<nav class="hud dots" aria-label="Chapters"></nav>
+<div class="hud bar" role="progressbar" aria-label="Scroll progress" aria-valuemin="0" aria-valuemax="100"><i id="pg"></i></div>
+
+<main>
+<section class="chap intro in" id="c0" data-t="Prologue"><div class="col hero">
+ <p class="lab eyebrow rv">An interactive study</p>
+ <h1 class="ttl rv">CONVERGENCE</h1>
+ <p class="sub rv"><em>On complexity, emergence, and the mathematics of order.</em></p>
+ <h2 class="sp">How does order emerge from chaos?</h2>
+ <p class="lede rv">From the motion of individual particles to the behavior of entire systems, patterns emerge where none were explicitly designed.</p>
+</div><div class="scr rv">Scroll to begin</div></section>
+<section class="chap" id="c1" data-t="Chaos"><div class="col">
+ <p class="lab rv">Chapter 01 <span>Chaos</span></p>
+ <h2 class="sp">Before the pattern</h2>
+ <p class="sub rv"><em>Randomness, entropy and the memory of initial conditions</em></p>
+ <p class="lede rv">Begin with a cloud that remembers nothing. Each point is placed by chance, yet the cloud is not unknowable: it has a measurable disorder, and the laws that would move it forward are exact. The difficulty lies elsewhere. In a chaotic system an error in measurement is not merely carried forward but amplified, so that the future comes to depend on digits no instrument recorded.</p>
+ <div class="blk rv"><h3>Mathematics</h3><p>Entropy measures missing information, H = −Σ pᵢ log pᵢ, and is largest when every outcome is equally likely. Dynamics adds amplification: two nearby trajectories of a chaotic system separate exponentially, at a rate given by the largest Lyapunov exponent λ. Lorenz’s three equations, ẋ = σ(y − x), ẏ = x(ρ − z) − y, ż = xy − βz, display this with a deterministic flow in only three variables.</p><p class="eq">δ(t) ≈ δ₀ e<sup>λt</sup></p></div>
+ <div class="blk rv"><h3>Why it matters</h3><p>Determinism and predictability are different properties. Chaos sets a horizon beyond which forecasts degrade whatever the model, and because the error grows exponentially, a tenfold gain in measurement precision buys only a fixed extension of that horizon.</p></div>
+ <div class="blk rv"><h3>In the world</h3><p>Numerical weather prediction, where ensembles of slightly perturbed starting states estimate forecast uncertainty; Monte Carlo methods in physics and finance; pseudorandom number generators, judged by statistical tests.</p></div>
+ <div class="blk rv refs"><h3>Further reading</h3><ul><li>E. N. Lorenz, <cite>Deterministic Nonperiodic Flow</cite>, J. Atmos. Sci. 20 (1963).</li><li>C. E. Shannon, <cite>A Mathematical Theory of Communication</cite>, Bell Syst. Tech. J. 27 (1948).</li><li>J. Gleick, <cite>Chaos: Making a New Science</cite> (1987).</li></ul></div>
+</div></section>
+<section class="chap" id="c2" data-t="Emergence"><div class="col">
+ <p class="lab rv">Chapter 02 <span>Emergence</span></p>
+ <h2 class="sp">A surface appears</h2>
+ <p class="sub rv"><em>Local rules and the patterns nobody drew</em></p>
+ <p class="lede rv">No particle here knows the shape it belongs to. Each answers only to its neighbours, and still a continuous field gathers, as a flock does without a leader or a dune without a plan. Emergence is the observation that the vocabulary suited to the whole, with words such as wavelength, density and front, may have no counterpart among the parts, and that description must change as scale does.</p>
+ <div class="blk rv"><h3>Mathematics</h3><p>Turing showed that two interacting chemicals which diffuse at different rates can destabilise a uniform mixture into spots or stripes. Each concentration obeys a reaction–diffusion equation, and the spacing of the pattern is set by the reaction and diffusion constants, not by any template imposed from outside.</p><p class="eq">∂ₜu = Dᵤ∇²u + f(u, v)</p></div>
+ <div class="blk rv"><h3>Why it matters</h3><p>To explain a pattern may be to identify its interactions rather than its components. The same cells or molecules can produce very different forms under different coupling, which is why parts lists alone never suffice.</p></div>
+ <div class="blk rv"><h3>In the world</h3><p>Reaction–diffusion models of animal pigmentation; flocking and schooling in the boids model; cellular automata such as Conway’s Game of Life; stop-and-go waves in highway traffic.</p></div>
+ <div class="blk rv refs"><h3>Further reading</h3><ul><li>A. M. Turing, <cite>The Chemical Basis of Morphogenesis</cite>, Phil. Trans. R. Soc. B 237 (1952).</li><li>P. W. Anderson, <cite>More Is Different</cite>, Science 177 (1972).</li><li>C. W. Reynolds, <cite>Flocks, Herds and Schools</cite>, Computer Graphics 21 (1987).</li></ul></div>
+</div></section>
+<section class="chap" id="c3" data-t="Connectivity"><div class="col">
+ <p class="lab rv">Chapter 03 <span>Connectivity</span></p>
+ <h2 class="sp">Who touches whom</h2>
+ <p class="sub rv"><em>Nodes, edges and the geography of influence</em></p>
+ <p class="lede rv">The surface thins into a lattice of relations. What matters now is not where a point sits but what it is joined to. In a network, position is topological: a node with few links is peripheral, one that lies on many routes is indispensable, and a handful of such hubs can decide how quickly anything, whether information, infection or failure, crosses the whole.</p>
+ <div class="blk rv"><h3>Mathematics</h3><p>A graph G = (V, E) is summarised by its adjacency matrix A, with Aᵢⱼ = 1 when i and j are linked; degree is kᵢ = Σⱼ Aᵢⱼ. Betweenness centrality, below, weighs how many shortest paths σₛₜ pass through a vertex v. Barabási and Albert showed that growth with preferential attachment produces a heavy-tailed degree distribution, P(k) ∼ k⁻³.</p><p class="eq">g(v) = Σ σₛₜ(v) / σₛₜ</p></div>
+ <div class="blk rv"><h3>Why it matters</h3><p>Topology constrains dynamics. Networks with heavy-tailed degrees tolerate the random loss of nodes yet are fragile to the targeted loss of hubs, and short average path lengths mean that distant parts of a system are rarely far apart.</p></div>
+ <div class="blk rv"><h3>In the world</h3><p>Epidemic spread on contact networks; cascading failures in power grids; the link structure of the web; neural wiring maps such as the connectome of the nematode <em>C. elegans</em>.</p></div>
+ <div class="blk rv refs"><h3>Further reading</h3><ul><li>L. Euler, <cite>Solutio problematis ad geometriam situs pertinentis</cite> (1736).</li><li>D. J. Watts &amp; S. H. Strogatz, <cite>Collective dynamics of ‘small-world’ networks</cite>, Nature 393 (1998).</li><li>A.-L. Barabási &amp; R. Albert, <cite>Emergence of Scaling in Random Networks</cite>, Science 286 (1999).</li><li>R. Albert, H. Jeong &amp; A.-L. Barabási, <cite>Error and attack tolerance of complex networks</cite>, Nature 406 (2000).</li></ul></div>
+</div></section>
+<section class="chap" id="c4" data-t="Synchronization"><div class="col">
+ <p class="lab rv">Chapter 04 <span>Synchronization</span></p>
+ <h2 class="sp">One rhythm</h2>
+ <p class="sub rv"><em>Coupled oscillators and the arithmetic of agreement</em></p>
+ <p class="lede rv">In 1665 Christiaan Huygens, confined to his room by illness, noticed that two pendulum clocks hung from the same beam had fallen into opposite swings. Nothing commanded it; the beam carried faint vibrations between them. The rings here pulse together on the same principle: weak coupling, repeated often enough, can turn many private rhythms into one.</p>
+ <div class="blk rv"><h3>Mathematics</h3><p>Kuramoto’s model gives each oscillator a phase θᵢ and a natural frequency ωᵢ, coupled through the population. The order parameter r e<sup>iψ</sup> = N⁻¹ Σ e<sup>iθⱼ</sup> measures coherence. For a single-peaked frequency distribution g(ω), r stays near zero until K exceeds K<sub>c</sub> = 2 / (π g(0)), then grows continuously.</p><p class="eq">dθᵢ/dt = ωᵢ + (K/N) Σⱼ sin(θⱼ − θᵢ)</p></div>
+ <div class="blk rv"><h3>Why it matters</h3><p>Collective timing behaves like a phase transition: a population crosses a coupling threshold and a macroscopic fraction locks together. It shows that agreement can arise from mutual adjustment alone, with no leader and no clock.</p></div>
+ <div class="blk rv"><h3>In the world</h3><p>Pacemaker cells of the heart; circadian rhythms in tissue; flashing fireflies of certain species; frequency regulation in power grids, where loss of synchrony is a failure mode.</p></div>
+ <div class="blk rv refs"><h3>Further reading</h3><ul><li>Y. Kuramoto, <cite>Self-entrainment of a population of coupled non-linear oscillators</cite>, Lecture Notes in Physics 39 (1975).</li><li>S. H. Strogatz, <cite>From Kuramoto to Crawford</cite>, Physica D 143 (2000).</li><li>S. Strogatz, <cite>Sync</cite> (2003).</li></ul></div>
+</div></section>
+<section class="chap" id="c5" data-t="Fractals"><div class="col">
+ <p class="lab rv">Chapter 05 <span>Fractals</span></p>
+ <h2 class="sp">Pattern within pattern</h2>
+ <p class="sub rv"><em>Self-similarity, scaling and non-integer dimension</em></p>
+ <p class="lede rv">The rings fold into a Sierpiński tetrahedron, built by a rule short enough to state in a line: move halfway toward a vertex chosen at random, and repeat. The shape is not drawn; it is the set of places the rule can never leave. Magnify any corner and the whole returns, which is why a ruler laid against such an object never settles on a single length.</p>
+ <div class="blk rv"><h3>Mathematics</h3><p>A set made of N copies of itself, each scaled by a factor r, has similarity dimension D = ln N / ln(1/r). The tetrahedron has N = 4 and r = ½, so D = 2; the Koch curve (N = 4, r = ⅓) has D ≈ 1.26, more than a line and less than a plane. Measured length then grows as the ruler ε shrinks, L(ε) ∝ ε<sup>1−D</sup>.</p><p class="eq">D = ln N / ln(1/r)</p></div>
+ <div class="blk rv"><h3>Why it matters</h3><p>Roughness can be quantified. Where structure is scale-free, a single exponent summarises behaviour across many orders of magnitude, and it separates objects that look alike at one scale but differ at another.</p></div>
+ <div class="blk rv"><h3>In the world</h3><p>Scaling statistics of coastlines and river networks; analyses of branching airways and vasculature; fractal antenna designs; iterated function systems in image compression.</p></div>
+ <div class="blk rv refs"><h3>Further reading</h3><ul><li>B. Mandelbrot, <cite>How Long Is the Coast of Britain?</cite>, Science 156 (1967).</li><li>B. Mandelbrot, <cite>The Fractal Geometry of Nature</cite> (1982).</li><li>M. Barnsley, <cite>Fractals Everywhere</cite> (1988).</li></ul></div>
+</div></section>
+<section class="chap" id="c6" data-t="Complexity"><div class="col">
+ <p class="lab rv">Chapter 06 <span>Complexity</span></p>
+ <h2 class="sp">Structures that answer back</h2>
+ <p class="sub rv"><em>Feedback, nonlinearity and adaptation</em></p>
+ <p class="lede rv">Two forms now share one space: a Lorenz attractor and a trefoil knot. Neither is complicated alone. What is complicated is the relation: agents that adjust to one another, signals that return amplified or damped, rules whose effect depends on the state they produce. Complex adaptive systems resemble ecologies more than machines, because the environment of each part is mostly the other parts.</p>
+ <div class="blk rv"><h3>Mathematics</h3><p>Nonlinearity is the essential ingredient. The logistic map is stable at a fixed point for r below 3, doubles its period in a cascade, and is chaotic from r ≈ 3.57. Feigenbaum found that the ratio of successive bifurcation intervals tends to δ ≈ 4.669, a constant shared by a wide class of unimodal maps.</p><p class="eq">xₙ₊₁ = r xₙ(1 − xₙ)</p></div>
+ <div class="blk rv"><h3>Why it matters</h3><p>Such systems resist reduction to a single cause. Feedback blurs the line between cause and effect, and adaptation means that yesterday’s regularities may not survive being acted upon.</p></div>
+ <div class="blk rv"><h3>In the world</h3><p>Population dynamics in ecology; learning in the immune system; price formation in financial markets; the evolution of cooperation in repeated games.</p></div>
+ <div class="blk rv refs"><h3>Further reading</h3><ul><li>R. M. May, <cite>Simple mathematical models with very complicated dynamics</cite>, Nature 261 (1976).</li><li>M. J. Feigenbaum, <cite>Quantitative universality for a class of nonlinear transformations</cite>, J. Stat. Phys. 19 (1978).</li><li>J. H. Holland, <cite>Hidden Order</cite> (1995).</li><li>M. Mitchell, <cite>Complexity: A Guided Tour</cite> (2009).</li></ul></div>
+</div></section>
+<section class="chap" id="c7" data-t="Equilibrium"><div class="col">
+ <p class="lab rv">Chapter 07 <span>Equilibrium</span></p>
+ <h2 class="sp">Rest, <em>earned</em></h2>
+ <p class="sub rv"><em>Fixed points, stability and the balance of forces</em></p>
+ <p class="lede rv">The motion drains away and the particles settle into nested shells. Stability is not stillness imposed from outside, but a state where every force is answered by another.</p>
+ <div class="blk rv"><h3>Mathematics</h3><p>A fixed point x* of ẋ = f(x) satisfies f(x*) = 0. It is stable if small perturbations decay, which Lyapunov analysis can certify by exhibiting an energy-like function V that never increases along trajectories. In games, a Nash equilibrium is a profile where no player gains by deviating alone.</p><p class="eq">V̇(x) = ∇V · f(x) ≤ 0</p></div>
+ <div class="blk rv"><h3>Why it matters</h3><p>Order can be the end state of dynamics, not only their starting assumption.</p></div>
+ <div class="blk rv"><h3>In the world</h3><p>Control engineering, predator–prey balance, strategic economics.</p></div>
+ <div class="blk rv refs"><h3>Further reading</h3><ul><li>J. Nash, <cite>Equilibrium points in n-person games</cite>, PNAS 36 (1950).</li><li>S. H. Strogatz, <cite>Nonlinear Dynamics and Chaos</cite> (2nd ed., 2015).</li><li>A. M. Lyapunov, <cite>The General Problem of the Stability of Motion</cite> (1892).</li></ul></div>
+</div></section>
+<section class="chap end" id="c8" data-t="Epilogue"><div class="col hero">
+ <h2 class="sp">Order was never the opposite of motion.</h2>
+ <p class="sub rv"><em>It was something motion could become.</em></p>
+ <p class="mono rv">End of study</p><p class="mono rv">Scroll backward to run it in reverse</p>
+ <p class="note rv">Every particle keeps one identity throughout. Its position is computed on the GPU, in the vertex shader, by interpolating between eight stored target configurations.</p>
+</div></section>
+</main>
+<noscript><p style="position:relative;z-index:2;text-align:center;color:#999">Enable JavaScript to see the particle visualization.</p></noscript>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+var secs=[].slice.call(document.querySelectorAll('.chap')),nav=document.querySelector('.dots');
+var k_=0;function wrap(n){[].slice.call(n.childNodes).forEach(function(c){if(c.nodeType===3){var f=document.createDocumentFragment();c.textContent.split(/(\s+)/).forEach(function(t){if(!t)return;if(/^\s+$/.test(t))f.appendChild(document.createTextNode(' '));else{var w=document.createElement('span');w.className='w';var i=document.createElement('i');i.textContent=t;i.style.setProperty('--k',k_++);w.appendChild(i);f.appendChild(w)}});n.replaceChild(f,c)}else wrap(c)})}
+[].forEach.call(document.querySelectorAll('.sp'),function(h){k_=0;wrap(h)});
+secs.forEach(function(s,i){var a=document.createElement('a');a.href='#'+s.id;a.setAttribute('aria-label',s.dataset.t+(i>0&&i<8?' — chapter '+i:''));nav.appendChild(a)});
+var dots=[].slice.call(nav.children);
+if('IntersectionObserver' in window){
+ var io=new IntersectionObserver(function(es){es.forEach(function(e){var c=e.target.classList;c.toggle('in',e.isIntersecting);c.toggle('past',!e.isIntersecting&&e.boundingClientRect.top<0)})},{rootMargin:'-25% 0px -25% 0px'});
+ secs.forEach(function(s){io.observe(s)});
+}else secs.forEach(function(s){s.classList.add('in')});
+
+var cv=document.getElementById('gl'),R_;
+try{R_=new THREE.WebGLRenderer({canvas:cv,antialias:false,powerPreference:'high-performance'});if(!R_.getContext())throw 0}catch(e){document.body.classList.add('nogl');R_=null}
+
+var cen=[];function measure(){cen=secs.map(function(s){var r=s.getBoundingClientRect();return r.top+scrollY+r.height/2})}
+function target(){var y=scrollY+innerHeight/2,n=cen.length-1;if(y<=cen[0])return 0;if(y>=cen[n])return n;for(var k=0;k<n;k++)if(y<cen[k+1])return k+(y-cen[k])/(cen[k+1]-cen[k]);return n}
+var nowEl=document.getElementById('now'),pg=document.getElementById('pg'),bar=pg.parentNode,cur=-1;
+function hud(up){
+ var m=document.documentElement.scrollHeight-innerHeight,p=m>0?Math.min(1,Math.max(0,scrollY/m)):0;
+ pg.style.transform='scaleX('+p+')';bar.setAttribute('aria-valuenow',Math.round(p*100));
+ var c=Math.round(up);if(c!==cur){cur=c;nowEl.textContent=c===0?'Prologue':c===8?'Epilogue':'0'+c+' / 07 — '+secs[c].dataset.t;dots.forEach(function(d,i){d.classList.toggle('on',i===c)})}
+}
+function remeasure(){measure()}
+addEventListener('load',remeasure);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(remeasure);
+measure();
+if(!R_){addEventListener('scroll',function(){hud(target())},{passive:true});addEventListener('resize',function(){measure();hud(target())});hud(0);return}
+
+var mob=innerWidth<760,N=mob?9000:26000;
+var seed=7;function R(){seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}
+function gs(){return(R()+R()+R()+R()-2)*1.2}
+// targets: 0 intro, 1 chaos, 2 surface, 3 network, 4 rings, 5 sierpinski, 6 complexity, 7 shells
+var G=[];for(var k=0;k<8;k++)G.push(new Float32Array(N*3));
+function put(a,i,x,y,z){a[i*3]=x;a[i*3+1]=y;a[i*3+2]=z}
+var nodes=[],edges=[],M=64,i,j;
+for(i=0;i<M;i++){var a=R()*6.283,b=Math.acos(2*R()-1),r=8*Math.cbrt(R());nodes.push([r*Math.sin(b)*Math.cos(a),r*Math.cos(b),r*Math.sin(b)*Math.sin(a)])}
+function d2(p,q){return(p[0]-q[0])*(p[0]-q[0])+(p[1]-q[1])*(p[1]-q[1])+(p[2]-q[2])*(p[2]-q[2])}
+for(i=0;i<M;i++){
+ var ord=nodes.map(function(n,idx){return[d2(nodes[i],n),idx]}).sort(function(x,y){return x[0]-y[0]});
+ edges.push([i,ord[1][1]],[i,ord[2][1]]);
+ if(i<6)for(j=0;j<9;j++)edges.push([i,Math.floor(R()*M)]);
+}
+var LT=10,L=Math.ceil(N/2/LT),lor=[];
+for(i=0;i<LT;i++){var x=1+i*.37,y=1+i*.11,z=1+i*.2,tr=[];
+ for(j=0;j<500+L;j++){var dx=10*(y-x),dy=x*(28-z)-y,dz=x*y-8/3*z;x+=dx*.006;y+=dy*.006;z+=dz*.006;if(j>=500)tr.push([x*.3,(z-25)*.3,y*.3])}
+ lor.push(tr)}
+var V=[[1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1]];
+for(i=0;i<N;i++){
+ var a=R()*6.283,b=Math.acos(2*R()-1),r=11*Math.cbrt(R());
+ // intro: a lumpy, slowly-breathing shell
+ var ir=6.5*(1+.25*Math.sin(2.3*a+1.1)*Math.sin(3*b)+.15*Math.sin(5*b+2*a))*(1+gs()*.07);
+ put(G[0],i,ir*Math.sin(b)*Math.cos(a),ir*Math.cos(b),ir*Math.sin(b)*Math.sin(a));
+ put(G[1],i,r*Math.sin(b)*Math.cos(a),r*Math.cos(b),r*Math.sin(b)*Math.sin(a));
+ var sx=(R()-.5)*30,sz=(R()-.5)*22;
+ put(G[2],i,sx,1.6*Math.sin(sx*.45)*Math.cos(sz*.55)+.7*Math.sin(sx*.9+sz*.6)-2,sz);
+ var e=edges[Math.floor(R()*edges.length)];
+ if(i%5===0){var n=nodes[R()<.5?e[0]:e[1]];put(G[3],i,n[0]+gs()*.35,n[1]+gs()*.35,n[2]+gs()*.35)}
+ else{var p=nodes[e[0]],q=nodes[e[1]],t=R();put(G[3],i,p[0]+(q[0]-p[0])*t+gs()*.07,p[1]+(q[1]-p[1])*t+gs()*.07,p[2]+(q[2]-p[2])*t+gs()*.07)}
+ var rr=1.2+Math.floor(R()*16)*.62,th=R()*6.283;put(G[4],i,rr*Math.cos(th),(R()-.5)*.05,rr*Math.sin(th));
+ var px=V[0][0]*8,py=V[0][1]*8,pz=V[0][2]*8;
+ for(j=0;j<16;j++){var v=V[Math.floor(R()*4)];px=(px+v[0]*8)/2;py=(py+v[1]*8)/2;pz=(pz+v[2]*8)/2}
+ put(G[5],i,px,py,pz);
+ if(i<N/2){var q2=lor[i%LT][Math.floor(i/LT)%L];put(G[6],i,q2[0],q2[1],q2[2])}
+ else{var tt=R()*6.283,rk=2+Math.cos(3*tt);put(G[6],i,rk*Math.cos(2*tt)*3.2+gs()*.25,Math.sin(3*tt)*3.2+gs()*.25,rk*Math.sin(2*tt)*3.2+gs()*.25)}
+ var sh=i%3,kk=Math.floor(i/3),ph=Math.acos(1-2*(kk+.5)/(N/3)),tg=Math.PI*(1+Math.sqrt(5))*kk,rs=3.5+sh*3;
+ put(G[7],i,rs*Math.sin(ph)*Math.cos(tg),rs*Math.cos(ph),rs*Math.sin(ph)*Math.sin(tg));
+}
+var geo=new THREE.BufferGeometry();
+geo.setAttribute('position',new THREE.BufferAttribute(G[0],3));
+for(k=1;k<8;k++)geo.setAttribute('p'+k,new THREE.BufferAttribute(G[k],3));
+var sd=new Float32Array(N);for(i=0;i<N;i++)sd[i]=R();
+geo.setAttribute('seed',new THREE.BufferAttribute(sd,1));
+var mat=new THREE.ShaderMaterial({
+ transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,
+ uniforms:{uP:{value:0},uT:{value:0},uTurb:{value:.25},uScale:{value:1},uIn:{value:0}},
+ vertexShader:[
+ 'attribute vec3 p1,p2,p3,p4,p5,p6,p7;attribute float seed;uniform float uP,uT,uTurb,uScale,uIn;varying float vS,vD;',
+ 'vec3 pick(float i){return i<.5?position:i<1.5?p1:i<2.5?p2:i<3.5?p3:i<4.5?p4:i<5.5?p5:i<6.5?p6:p7;}',
+ 'float w(float c){return max(0.,1.-abs(uP-c));}',
+ 'void main(){',
+ 'float i0=floor(min(uP,6.999)),f=uP-i0;',
+ 'float t=smoothstep(0.,1.,clamp((f-.2)/.6*1.7-seed*.7,0.,1.));',
+ 'vec3 p=mix(pick(i0),pick(i0+1.),t);',
+ 'float s6=seed*6.2832;',
+ 'p+=vec3(sin(p.y*.7+uT*.4+s6),sin(p.z*.7+uT*.35+s6*.5),sin(p.x*.7+uT*.3+s6*1.3))*uTurb*(.5+seed);',
+ 'p.y+=sin(p.x*.5+uT*.6)*cos(p.z*.6-uT*.4)*.9*w(2.);',
+ 'p.y+=sin(uT*2.2-length(p.xz)*.9)*1.3*w(4.);',
+ 'p*=1.+.04*sin(uT*.8+length(p)*.3)*w(6.);',
+ 'float vis=clamp(uIn*1.7-seed*.7,0.,1.);',
+ 'vec4 mv=modelViewMatrix*vec4(p,1.);',
+ 'gl_Position=projectionMatrix*mv;',
+ 'gl_PointSize=(.8+seed*1.5)*uScale*(34./-mv.z)*(.3+.7*vis);',
+ 'vS=seed;vD=clamp(1.15-(-mv.z-12.)/36.,.15,1.)*vis;}'].join('\n'),
+ fragmentShader:[
+ 'varying float vS,vD;',
+ 'void main(){vec2 c=gl_PointCoord-.5;float d=length(c);if(d>.5)discard;',
+ 'float a=smoothstep(.5,.05,d)*vD*(.35+.5*vS);',
+ 'vec3 col=mix(vec3(.62),vec3(1.),vS);gl_FragColor=vec4(col*a,a);}'].join('\n')
+});
+var pts=new THREE.Points(geo,mat);pts.frustumCulled=false;
+var scene=new THREE.Scene();scene.background=new THREE.Color(0x030303);scene.add(pts);
+var cam=new THREE.PerspectiveCamera(55,1,.1,200),camZ=26,LX=0,LY=0,LS=1,HH=13,wide=true;
+function size(){var pr=Math.min(devicePixelRatio||1,2);R_.setPixelRatio(pr);R_.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;camZ=innerWidth<760?36:26;cam.updateProjectionMatrix();mat.uniforms.uScale.value=pr*Math.max(.7,innerHeight/900);measure();
+ wide=innerWidth>=800&&innerWidth/innerHeight>1.15;HH=Math.tan(.4800)*camZ;var HW=HH*cam.aspect;
+ LX=wide?HW*.42:0;LY=wide?0:HH*.24;LS=wide?.85:.72}
+addEventListener('resize',size);size();
+var mx=0,my=0;addEventListener('pointermove',function(e){mx=e.clientX/innerWidth*2-1;my=e.clientY/innerHeight*2-1},{passive:true});
+var TURB=[.25,1,.4,.12,.08,.04,.28,.01],last=performance.now(),t0=last,T=0,up=target();
+function ease(x){return x*x*(3-2*x)}
+// text sits on one side per chapter; the formation moves to the opposite side
+var SIDE=[0,1,-1,1,-1,1,-1,1,0];
+function sideAt(u){if(u>=8)return 0;var k=Math.floor(u),f=u-k;return SIDE[k]+(SIDE[k+1]-SIDE[k])*ease(Math.min(1,Math.max(0,(f-.2)/.6)))}
+function frame(now){
+ var dt=Math.min(.05,(now-last)/1e3);last=now;
+ // scroll sets a target; the visualization follows at a capped, eased pace
+ var tg=target();
+ if(reduce)up=tg;else{var d=(tg-up)*(1-Math.exp(-dt*.9)),m=.3*dt;up+=Math.max(-m,Math.min(m,d))}
+ if(!reduce)T+=dt*.5;
+ mat.uniforms.uIn.value=reduce?1:ease(Math.min(1,Math.max(0,(now-t0-900)/9000)));
+ var g=Math.min(up,7),i0=Math.min(6,Math.floor(g)),f=g-i0,tt=f<=.2?0:f>=.8?1:ease((f-.2)/.6);
+ var tb=(TURB[i0]+(TURB[i0+1]-TURB[i0])*tt)*(1-Math.min(1,Math.max(0,up-7)));
+ mat.uniforms.uP.value=g;mat.uniforms.uT.value=T;mat.uniforms.uTurb.value=tb;
+ pts.rotation.y=up*.42+(reduce?0:T*.03);
+ pts.rotation.x=.42+.15*Math.sin(up*.8);
+ pts.position.x=-(wide?sideAt(up):0)*LX;pts.position.y=LY+Math.min(1,Math.max(0,up-7))*HH*.3;pts.scale.setScalar(LS);
+ var px=reduce?0:mx*2,py=reduce?0:-my*1.4;
+ cam.position.x+=(px-cam.position.x)*.02;cam.position.y+=(py-cam.position.y)*.02;cam.position.z=camZ-Math.sin(Math.min(up,8)/8*Math.PI)*2.5;
+ cam.lookAt(0,0,0);R_.render(scene,cam);hud(up);
+ requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
